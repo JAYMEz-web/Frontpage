@@ -6,7 +6,7 @@ function TopNav({searchQuery, onSearchChange, showAddFeed, onToggleAddFeed, newF
                 <button className="menu-btn" onClick={onToggleSidebar}>
                   <Menu size={20}/>
                 </button>
-                <span className="logo">Frontpage</span>
+                <span className="logo">📖Frontpage</span>
                 <nav className="tabs">
                   <span 
                     className={`tab ${activeTab === "feed" ? "active" : ""}`}

@@ -9,10 +9,10 @@ import Login from "./components/Login.jsx";
 import Signup from "./components/Signup.jsx";
 import DigestView from "./components/DigestView.jsx";
 import { categories, articles as initialArticles } from "./sampleData.js";
+import SplashScreen from "./components/SplashScreen.jsx";
 import './App.css'
-import { LogIn } from "lucide-react";
 
-const feedList = [
+const defaultFeeds = [
   // Frontend
   { url: "https://css-tricks.com/feed/", category: "Frontend" },
   { url: "https://www.smashingmagazine.com/feed/", category: "Frontend" },
@@ -76,6 +76,31 @@ function App() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
+  const [feeds, setFeeds] = useState(() => {
+    const savedFeeds = localStorage.getItem("rss_feeds")
+    return savedFeeds ? JSON.parse(savedFeeds) : defaultFeeds
+  })
+  useEffect(() => {
+    localStorage.setItem("rss_feeds", JSON.stringify(feeds))
+  }, [feeds])
+
+  const [deletedIds, setDeletedIds] = useState(() => {
+    const saved = localStorage.getItem("deletedIds")
+    return saved ? JSON.parse(saved) : []
+  })
+
+  const [isLoading, setIsLoading] =useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 2000); //2000ms = 2 seconds delay
+    return () => clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem("deletedIds", JSON.stringify(deletedIds))
+  }, [deletedIds])
+
   useEffect(() => {
     if (currentUser) {
       localStorage.setItem("currentUser", JSON.stringify(currentUser))
@@ -87,7 +112,7 @@ function App() {
   useEffect(() => {
     async function loadFeeds() {
       const results = await Promise.all(
-        feedList.map( async (feed) => {
+        feeds.map( async (feed) => {
           const articles = await fetchFeed(feed.url, feed.category)
           return { url: feed.url, success: articles.length > 0, articles}
         })
@@ -107,10 +132,11 @@ function App() {
         }
         return freshArticle
       })
-      setArticles(mergeArticles)
+      const finalArticles = mergeArticles.filter((article) => !deletedIds.includes(article.id))
+      setArticles(finalArticles)
     }
     loadFeeds();
-  }, []);
+  }, [feeds, deletedIds]);
 
 
    useEffect(() => {
@@ -147,13 +173,18 @@ function App() {
 
   async function handleAddFeed() {
     setFeedError("")
+
+    if (feeds.some((f) => f.url.toLowerCase() === newFeedUrl.trim().toLowerCase())) {
+      setFeedError("You've already added this feed.")
+      return
+    }
     const newArticles = await fetchFeed(newFeedUrl, "Uncategorized")
    
     if (newArticles.length === 0) {
       setFeedError("That doesn't look like a valid feed. Double-check the URL and try again.")
       return
     }
-    setArticles((prevArticles) => [...prevArticles, ...newArticles])
+    setFeeds((prevArticles) => [...prevArticles, { url: newFeedUrl, category: "Uncategorized"}])
     setNewFeedUrl("")
     setShowAddFeed(false)
     
@@ -232,11 +263,18 @@ function App() {
     setSelectedArticle(null)
   }
 
+  function deleteArticle(id){
+    setArticles((prevArticles) => prevArticles.filter((article) => article.id !==id))
+    setDeletedIds((prevIds) => [...prevIds, id])
+  }
+    if (isLoading) {
+      return <SplashScreen/>
+    }
     if (currentPage === "login") {
       return <Login onNavigate={setCurrentPage} onLogin={handleLogin} authError={authError}/>
     }
     if (currentPage === "signup") {
-      return <Signup onNavigate={setCurrentPage} onSignup={handleSignup}/>
+      return <Signup onNavigate={setCurrentPage} onSignup={handleSignup} authError={authError}/>
     }
     return (
   <div className="page-wrapper">
@@ -268,7 +306,9 @@ function App() {
         allItemsCount={allItemsCount}
         savedCount={savedCount}
         feedHealth={feedHealth}
-        sidebarOpen={sidebarOpen}       
+        sidebarOpen={sidebarOpen}
+        activeTab={activeTab}
+        onTabChange={(tab) => { setActiveTab(tab); setSidebarOpen(false); }}
       />
       <div className="main-content">
         <div className="toolbar">
@@ -292,6 +332,7 @@ function App() {
     articles={filteredArticles}
     onArticleClick={openArticle}
     onBookmarkClick={toggleBookmark}
+    onDeleteClick={deleteArticle}
     layoutMode={layoutMode}
   />
 )}

@@ -1,6 +1,11 @@
-function Sidebar({ selectedCategory, onCategorySelect, categories, allItemsCount, savedCount, feedHealth, sidebarOpen}) {
+function Sidebar({ selectedCategory, onCategorySelect, categories, allItemsCount, savedCount, feedHealth, sidebarOpen, activeTab, onTabChange}) {
   return (
     <div className={`sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}>
+      <div className="mobile-tabs">
+        <span className={`tab ${activeTab === "feed" ? "active" : ""}`} onClick={() => onTabChange("feed")}>Feed</span>
+        <span className={`tab ${activeTab === "digest" ? "active" : ""}`} onClick={() => onTabChange("digest")}>Digest</span>
+        <span className={`tab ${activeTab === "discover" ? "active" : ""}`} onClick={() => onTabChange("discover")}>Discover</span>
+      </div>
       <h2 className="sidebar-title">Categories</h2>
       <ul className="category-list">
         <li

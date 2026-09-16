@@ -1,6 +1,6 @@
-import { Bookmark } from 'lucide-react'
+import { Bookmark, Trash2 } from 'lucide-react'
 
-function ArticleList({ articles, onArticleClick, onBookmarkClick, layoutMode}) {
+function ArticleList({ articles, onArticleClick, onBookmarkClick, layoutMode, onDeleteClick}) {
   return (
     <div className={`article-list ${layoutMode === "card" ? "card-layout" : ""}`}>
       {articles.map((article) => (
@@ -20,6 +20,7 @@ function ArticleList({ articles, onArticleClick, onBookmarkClick, layoutMode}) {
             <h3 className="article-title">{article.title}</h3>
             <p className="article-excerpt">{article.excerpt}</p>
           </div>
+          <div className='article-actions'>
           <button 
              className={`bookmark-btn ${article.bookmarked ? 'bookmarked' : ''}`}
              onClick={(e) => {
@@ -32,6 +33,16 @@ function ArticleList({ articles, onArticleClick, onBookmarkClick, layoutMode}) {
               fill={article.bookmarked ? 'currentColor' : 'none'} 
             />
           </button>
+            <button 
+               className="delete-btn"
+               onClick={(e) => {
+                 e.stopPropagation();
+                 onDeleteClick(article.id);
+               }}
+            >
+              <Trash2 size={18} />
+            </button>
+            </div>
         </div>
       ))}
     </div>
