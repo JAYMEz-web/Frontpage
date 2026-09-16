@@ -25,7 +25,7 @@ function Signup({ onNavigate, onSignup, authError,}) {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1 className="auth-logo">Frontpage</h1>
+        <h1 className="auth-logo">📖fRONTPAGE</h1>
         <h2 className="auth-title">Create an account</h2>
 
         <form className="auth-form" onSubmit={handleSubmit}>
